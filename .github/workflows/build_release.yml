@@ -1,0 +1,59 @@
+name: Build & Release Hybrid Shooter
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install pygame
+
+      - name: Create build ZIP
+        run: |
+          mkdir build
+          cp -r *.py build/
+          cp -r *.png build/
+          cp -r sounds build/
+          cp README.md build/
+          cd build
+          zip -r hybrid_shooter.zip .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: hybrid_shooter_build
+          path: build/hybrid_shooter.zip
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: hybrid_shooter_build
+          path: .
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Hybrid Shooter Release"
+          tag_name: ${{ github.ref_name }}
+          files: hybrid_shooter.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
