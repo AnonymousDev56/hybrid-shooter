@@ -3,29 +3,36 @@ name: Build and Release Game
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.11'
+          python-version: "3.11"
 
-      - name: Install pygame
+      - name: Install pygame dependency
         run: |
           sudo apt update
-          sudo apt install -y python3-pygame
+          sudo apt install -y python3-pygame zip
 
       - name: Create ZIP build
         run: |
-          zip -r hybrid_shooter_build.zip . -x ".git/*"
+          mkdir build
+          cp -r ./*.py build/
+          cp -r ./sounds build/
+          cp *.png build/
+          cp README.md build/
+
+          cd build
+          zip -r ../hybrid_shooter_build.zip .
 
       - name: Upload Release Asset
         uses: softprops/action-gh-release@v1
